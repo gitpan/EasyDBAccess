@@ -1,0 +1,19 @@
+#===3.0.0(2006-05-08): merge $param and $ext_option,more document
+#===2.9.2(2006-04-12): remove relation between $_name_utf8 and EasyTool, add _EasyDBAccess_EasyHandler, use this package instead if EasyTool not load
+#===2.9.1(2006-04-10): add option $_HIDE_CONN_PARAM, hide conn infomation by default when die, for security
+#===2.9.0(2006-04-10): replace globe constant modifier from 'my' to 'our'
+#===2.8.0(2006-04-05): add batch_insert function, add select_array function
+#===2.7.0(2006-02-13): BUG Fix ,check ^1
+#===2.6.0(2006-02-07): delete auto_die_handler function, delete install function, add note function
+#===2.5.0(2006-02-07): new usage: $dba->err_code() $dba->err_code('ER_DUP_ENTRY') $dba->err_code(1062) 
+#===2.4.0(2006-01-03): u can get err_code from $dba->err_code();
+#===2.2.2(2005-09-07): use socket to connect mysql server
+#===2.2.2(2005-08-10): change qquote check utf8::is_utf8 before use it,so that the program can run in perl low version
+#===2.2.1(2005-07-01): rename errcode to err_code, add err_code ER_PARSE_ERROR
+#===2.2.0(2005-07-01): return use wantarray
+#===2.1.1(2005-04-28): add errcode function
+#===2.1.0            : improve id function
+#===2.0.4            : add once function
+#===2.0.3            : some small bug fix
+#===2.0.2            : encoding bug fix
+#===2.0.1            : so that u can change $_debug in runtime >>my $_debug=1; => our $_debug=1;
