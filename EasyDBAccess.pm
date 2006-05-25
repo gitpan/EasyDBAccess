@@ -1,10 +1,8 @@
-BEGIN {
-$EasyDBAccess::VERSION = "1.50";
-}
-
 package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
+
+our $VERSION = '3.0.0';
 
 #===================================
 #===Module  : 43effa740d56a6fd
