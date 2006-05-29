@@ -1852,26 +1852,26 @@ B<e.g>
 
 	$rc/($rc,$err_code)=$dba->select_select_array($sql_str,$bind_param,$inline_param);
 
-	return result as array_ref of hash_ref ([[1,'hello'],...]) 
+	return result as array_ref of array_ref ([[1,'hello'],...]) 
 
 =head2 select_row - return first row of result set as hash
 
 	$rc/($rc,$err_code)=$dba->select_row($sql_str,$bind_param,$inline_param);
 		
-	return result as array_ref of hash_ref ({id=>1,name=>'hello'})
+	return first row of result set as hash ({id=>1,name=>'hello'})
 	if no row in result set, then $rc=undef, $err_code=1 but won't cause a die
 
 =head2 select_col - return first column of result set as array_ref
 
 	$rc/($rc,$err_code)=$dba->select_row($sql_str,$bind_param,$inline_param);
 	
-	return result as array_ref of hash_ref ( [1,2,3,...] )
+	return first column of result set as array_ref( [1,2,3,...] )
 
 =head2 select_one - return first row first column of result set scalar
 
 	$rc/($rc,$err_code)=$dba->select_one($sql_str,$bind_param,$inline_param);
 
-	return result as scalar ( 1 )
+	return first row first column of result set scalar( 1 )
 	if no row in result set, then $rc=undef, $err_code=1 but won't cause a die
 
 =head1 additional function
