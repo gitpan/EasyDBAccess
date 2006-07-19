@@ -4,6 +4,6 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
 	'NAME' => 'EasyDBAccess',
 	'VERSION_FROM'	=>	'EasyDBAccess.pm',
-	dist		=>	{ COMPRESS => 'gzip -9f', SUFFIX => 'gz'}
+	dist		=>	{ COMPRESS => 'gzip -9f', SUFFIX => '.gz'}
 );
 

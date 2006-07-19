@@ -1,7 +1,8 @@
-README
-LICENSE
 CHANGES
 EasyDBAccess.pm
-t/EasyDBAccess.t
-MANIFEST
+INSTALL
+LICENSE
 Makefile.PL
+MANIFEST
+README
+t/EasyDBAccess.t
