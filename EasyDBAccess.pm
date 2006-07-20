@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.3';
+our $VERSION = '3.0.4';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.3';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.0.4(2006-07-19): add insert_one_row(), update()
 #===3.0.3(2006-07-18): modified global constants, document format
 #===3.0.2(2006-07-13): modified function close(), modified select_one() for bugs
 #===3.0.1(2006-07-12): u can get err_str from $dba->err_str()
@@ -349,6 +350,9 @@ sub new {
   $self->{die_handler}=$die_handler;
   $self->{unicode}=$unicode;
   $self->{encoding}=$encoding;
+#==3.0.1==
+  $self->{err_str}=undef;
+#===end===
   $self->{err_code}=undef;
   $self->{once}=0;#ignore the next function's error
   return wantarray?($self,0,undef,$_pkg_name):$self;
@@ -655,6 +659,29 @@ sub batch_insert{
   return 1;  
 }
 
+#==3.0.4==
+#===wang.yezhuo add start===
+
+sub insert_one_row {
+  my $self = shift;
+  my ($sql, $filter, $rh_data, $ra) = @_;
+
+  my $ra_param = build_array($filter, $rh_data, $ra);
+
+  return $self->execute($sql, $ra_param);
+}
+
+sub update {
+  my $self = shift;
+  my ($sql, $filter, $rh_data, $ra_param) = @_;
+
+  my ($item_str, $item_bind_param, $flag, $item_str2) = build_update($filter, $rh_data);
+
+  return $self->execute($sql, [@$item_bind_param, @$ra_param], {ITEM => $item_str, COMMAITEM => $item_str2});
+}
+
+#===wang.yezhuo add end===
+#===end===
 
 sub die_to_file{
   my $file_path= shift;
@@ -693,10 +720,8 @@ sub err_str{
     my $param_count=scalar(@_);
     if($param_count==1){
         return $_[0]->{err_str};
-    }elsif($param_count==2){
-        return defined($_[0]->{err_str})&&$_[0]->{err_str}==$_[1];
     }else{
-      CORE::die("$_pkg_name\:\:$_str_func_err_str\(\) param count should be 1 or 2");
+      CORE::die("$_pkg_name\:\:$_str_func_err_str\(\) param count should be 1");
     }
 }
 #===end===
@@ -797,6 +822,9 @@ sub execute{
   
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});;
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -858,6 +886,10 @@ sub execute{
   if($self->{dbh}->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($self->{dbh}->errstr)?"ErrString : ".$self->{dbh}->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
     for(my $i=0;;$i++){
@@ -869,7 +901,6 @@ sub execute{
     }
     $caller="CallerInfo:\n$caller";
     $err_detail="$_pkg_name\:\:$_str_func_execute\(\) throw $_str_exec_err\nHelpNote  : $_str_dbh_do_err\n$sys_err$param$caller\n";
-    $self->{err_code}=$self->{dbh}->err;
     if($_DEBUG&&!$once){
       if(defined($die_handler)){
         $die_handler->execute($err_code,$err_detail,$_pkg_name);
@@ -896,6 +927,9 @@ sub select {
 
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -959,6 +993,9 @@ sub select {
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.1==
+    $self->{err_str}=$sth->errstr;
+#===end===
     $self->{err_code}=$sth->err;
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
@@ -986,6 +1023,10 @@ sub select {
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
@@ -1027,6 +1068,9 @@ sub select_row{
 
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -1090,6 +1134,9 @@ sub select_row{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.1==
+    $self->{err_str}=$sth->errstr;
+#===end===
     $self->{err_code}=$sth->err;
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
@@ -1117,6 +1164,10 @@ sub select_row{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
@@ -1165,6 +1216,9 @@ sub select_one{
 
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -1234,6 +1288,9 @@ sub select_one{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.1==
+    $self->{err_str}=$sth->errstr;
+#===end===
     $self->{err_code}=$sth->err;
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
@@ -1264,6 +1321,10 @@ sub select_one{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
@@ -1312,6 +1373,9 @@ sub select_col{
 
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -1375,6 +1439,9 @@ sub select_col{
   if(!$succ){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.1==
+    $self->{err_str}=$sth->errstr;
+#===end===
     $self->{err_code}=$sth->err;
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
@@ -1402,6 +1469,10 @@ sub select_col{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
@@ -1445,6 +1516,9 @@ sub select_array{
 
   my $once=($_ONCE==1||$self->{once}==1)?1:0;
   if($once){$_ONCE=0 if $_ONCE==1;$self->{once}=0 if $self->{once}==1};
+#==3.0.1==
+  $self->{err_str}=undef if defined($self->{err_str});
+#===end===
   $self->{err_code}=undef if defined($self->{err_code});
 
   if(!defined($sql_str)){
@@ -1508,6 +1582,9 @@ sub select_array{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.1==
+    $self->{err_str}=$sth->errstr;
+#===end===
     $self->{err_code}=$sth->err;
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
@@ -1535,6 +1612,10 @@ sub select_array{
   if($sth->err){
     my ($err_code,$err_detail,$die_handler)=(5,'',$self->{die_handler});
     my $sys_err=defined($sth->errstr)?"ErrString : ".$sth->errstr."\n":'';
+#==3.0.4==
+    $self->{err_str}=$self->{dbh}->errstr;
+    $self->{err_code}=$self->{dbh}->err;
+#===end===
     $sth->finish();
     my $param="ParamInfo :\n"._dump([$sql_str,@$bind_param])."\n";
     my $caller='';
@@ -1965,7 +2046,7 @@ B<e.g>
   
   print $dba->type();
 
-=head2 once - disable "DIE" in next operation
+=head2 once - disable DIE in next operation
     
   EasyDBAccess->once();
   $dba->once();
@@ -1982,7 +2063,7 @@ B<e.g>
     CORE::die 'BUG';
   }
   
-=head2 err_code, err_str - return database error code and string of last db operator
+=head2 err_code err_str - return database error code and info of last db operator
 
   $dba->err_code();#1146,if no error, return undef
   $dba->err_str();
@@ -2090,6 +2171,36 @@ B<e.g>
   if($count>0){
     $dba->execute("update person set $strgender=1 where id=?",[@$ra_bind_param,3]);
   }
+  
+=head2 insert_one_row - execute command from binding data
+
+  execute command from binding data, always for insert
+
+  $rc/($rc,$err_code)=EasyDBAccess::insert_one_row($sql, $filter, $rh_data, $ra);
+  
+B<e.g>
+
+  my $sql='insert into person values (?,?)';
+  my $filter=[qw/name ?/];
+  my $param={name=>'tom',age=>23,other_key=>'hello'};
+  my $ra=[23]
+  my $record=&EasyDBAccess::insert_one_row($sql,$filter,$record,$ra);
+  
+=head2 update - execute command from inline data
+
+  execute command from binding data, always for update
+
+  $rc/($rc,$err_code)=EasyDBAccess::update($sql, $filter, $rh_data, $ra_param);
+  
+B<e.g>
+
+  my $sql='update person set %ITEM, SCORE=\'A\' where name=?';
+  #my $sql='update person set %COMMAITEM SCORE=\'A\' where name=?';
+  #COMMAITEM is ITEM with a comma
+  my $filter=[qw/age/];
+  my $rh_data={name=>'tom',age=>24};
+  my $ra_param=['tom'];
+  my $record=&EasyDBAccess::update($sql, $filter, $rh_data, $ra_param);
 
 =head1 utility function
 
@@ -2134,7 +2245,7 @@ B<e.g>
 
 =head1 example
 
-=head2 error handling & "DIE" & "once"
+=head2 error handling  DIE  once
 
 B<this will make an CONN_ERR, it will triger "DIE">
 

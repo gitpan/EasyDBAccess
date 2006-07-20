@@ -11,7 +11,7 @@ sub NO_DIE {&EasyTest::NO_DIE};
 sub ANY {&EasyTest::ANY};
 #==============================
 
-plan(214);
+plan(229);
 
 my $dba;
 my $dbh;
@@ -174,10 +174,6 @@ ok(['NAME=?', ['jack'], 1, 'NAME=?,'], \&EasyDBAccess::build_update,
 
 
 
-#===err_string, err_code
-
-
-
 #===_lookup_err_code, test 58-61
 
 ok(1062, \&EasyDBAccess::_lookup_err_code, ['1062']);
@@ -212,7 +208,7 @@ ok('', \&EasyDBAccess::is_id, ['4294967296']);
 
 
 
-#===execute, select, select_row, select_one, select_col. select_array
+#===execute, select, select_row, select_one, select_col, select_array, err_str, err_code
 
 #--sql null error, test 76-105
 ok(&DIE, \&EasyDBAccess::execute, [$dba_2, undef, [], {start_pos => 1}]);
@@ -288,44 +284,50 @@ ok(undef, \&EasyDBAccess::select_array, [$dba_2, 'SELECT * FROM RES LIMIT %start
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 2, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_array, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => undef}], 1);
 
-#--sql execute error, test 136-165
+#--sql execute error, test 136-171
 ok(&DIE, \&EasyDBAccess::execute, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::execute, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::execute, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_row, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_row, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_row, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_one, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_one, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_one, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_col, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_col, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_col, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_array, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_array, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}]);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_array, [$dba_2, 'SELECT * FROM RES LIMIT %start_pos,1', [], {start_pos => 1}], 1);
+ok(1146, \&EasyDBAccess::err_code, [$dba_2]);
 
-#--execute on a none select sql, test 166-192
+#--execute on a none select sql, test 172-203
 ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(['0E0', 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
 
@@ -334,32 +336,37 @@ ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
+ok(19, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_row, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_row, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_row, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
+ok(19, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_one, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_one, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_one, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
+ok(19, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_col, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_col, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_col, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
+ok(19, \&EasyDBAccess::err_code, [$dba_2]);
 
 ok(&DIE, \&EasyDBAccess::select_array, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok(undef, \&EasyDBAccess::select_array, [$dba_2, 'DROP TABLE IF EXISTS HELLO']);
 ok(1, \&EasyDBAccess::once, []);
 ok([undef, 5, &ANY, 'EasyDBAccess'], \&EasyDBAccess::select_array, [$dba_2, 'DROP TABLE IF EXISTS HELLO'], 1);
+ok(19, \&EasyDBAccess::err_code, [$dba_2]);
 
-#--SQL execute success, test 193-212
+#--SQL execute success, test 204-222
 ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS PERSON']);
 
 ok(['0E0', 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::execute, [$dba_2, 'CREATE TABLE PERSON(NAME VARCHAR(255) NOT NULL,AGE INT NOT NULL)'], 1);
@@ -394,16 +401,27 @@ ok([[["Bill", 23], ["James", 24], ["Mike", 23]], 0, &ANY, 'EasyDBAccess'], \&Eas
         [$dba_2, 'SELECT * FROM PERSON ORDER BY NAME ASC'], 1);
 
 
-ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS PERSON']);
-
-
-#===batch_insert, test 213
+#===batch_insert, test 223
 
 ok(1, \&EasyDBAccess::batch_insert, [$dba_2, 'insert into PERSON values %V','(?,?)',[[1,'tom'],[2,'gates'],[3,'bush']],100]);
 
 
-#test 214
+#===insert_one_row, test 224-225
 
+ok(1, \&EasyDBAccess::insert_one_row, [$dba_2, 'INSERT INTO PERSON VALUES(?,?)',['?', 'age'], {name=>'jim',age=>23,other_key=>'hello'}, ['jim']]);
+ok([1, 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::insert_one_row,
+  [$dba_2, 'INSERT INTO PERSON VALUES(?,?)', ['name', '?'], {name=>'tim',age=>23,other_key=>'hello'}, [23]], 1);
+
+
+#===update, test 226-227
+
+ok(1, \&EasyDBAccess::update, [$dba_2, 'UPDATE PERSON SET %ITEM WHERE NAME=?',['age'], {name=>'tim',age=>24}, ['tim']]);
+ok([1, 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::update,
+  [$dba_2, 'UPDATE PERSON SET %ITEM WHERE NAME=?', ['age'], {name=>'jim',age=>24, other_key=>'bye'}, ['jim']], 1);
+
+#test 228-229
+
+ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS PERSON']);
 ok(1, \&EasyDBAccess::close, [$dba_2]);
 
 

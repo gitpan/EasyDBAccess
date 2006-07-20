@@ -1,3 +1,4 @@
+#===3.0.4(2006-07-19): add insert_one_row(), update()
 #===3.0.3(2006-07-18): modified global constants, document format
 #===3.0.2(2006-07-13): modified function close(), modified select_one() for bugs
 #===3.0.1(2006-07-12): u can get err_str from $dba->err_string()
