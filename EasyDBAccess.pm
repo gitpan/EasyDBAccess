@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.5';
+our $VERSION = '3.0.6';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.5';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.0.6(2006-07-21): change Makefile.PL
 #===3.0.5(2006-07-20): change META.yml
 #===3.0.4(2006-07-19): add insert_one_row(), update()
 #===3.0.3(2006-07-18): modified global constants, document format
