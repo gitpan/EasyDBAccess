@@ -1,3 +1,4 @@
+#===3.0.7(2006-09-13): modified batch_insert
 #===3.0.6(2006-07-21): change Makefile.PL
 #===3.0.5(2006-07-20): change META.yml
 #===3.0.4(2006-07-19): add insert_one_row(), update()

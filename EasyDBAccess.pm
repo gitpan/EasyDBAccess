@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.6';
+our $VERSION = '3.0.7';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.6';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.0.7(2006-09-13): modified batch_insert
 #===3.0.6(2006-07-21): change Makefile.PL
 #===3.0.5(2006-07-20): change META.yml
 #===3.0.4(2006-07-19): add insert_one_row(), update()
@@ -647,6 +648,24 @@ sub batch_insert{
       chop($values_str);
       $s=~s/\%V/$values_str/g;
       $self->{dbh}->do($s,undef,@$bind_param);
+#==3.0.7==
+      if($self->{dbh}->err){
+				my $err_detail;
+				my $sys_err=defined($self->{dbh}->errstr)?"ErrString : ".$self->{dbh}->errstr."\n":'';
+    		my $param="ParamInfo :\n"._dump([$s,@$bind_param])."\n";
+		    my $caller='';
+		    for(my $i=0;;$i++){
+		      my $ra_caller_info=[caller($i)];
+		      if(scalar(@$ra_caller_info)==0){last;}
+		      else{
+		        $caller="\t$ra_caller_info->[1] LINE ".sprintf('%04s',$ra_caller_info->[2]).": $ra_caller_info->[3]\n$caller";
+		      }
+		    }
+		    $caller="CallerInfo:\n$caller";
+		    $err_detail="$_pkg_name\:\:batch_insert\(\) throw $_str_exec_err\nHelpNote  : $_str_dbh_do_err\n$sys_err$param$caller\n";
+    		return wantarray?(0,5,$err_detail,$_pkg_name):0;
+			}
+#===end===
       $values_str='';$c=0;$bind_param=[];
     }
   }
@@ -656,9 +675,30 @@ sub batch_insert{
     chop($values_str);
     $s=~s/\%V/$values_str/g;
     $self->{dbh}->do($s,undef,@$bind_param);
+#==3.0.7==
+      if($self->{dbh}->err){
+				my $err_detail;
+				my $sys_err=defined($self->{dbh}->errstr)?"ErrString : ".$self->{dbh}->errstr."\n":'';
+    		my $param="ParamInfo :\n"._dump([$s,@$bind_param])."\n";
+		    my $caller='';
+		    for(my $i=0;;$i++){
+		      my $ra_caller_info=[caller($i)];
+		      if(scalar(@$ra_caller_info)==0){last;}
+		      else{
+		        $caller="\t$ra_caller_info->[1] LINE ".sprintf('%04s',$ra_caller_info->[2]).": $ra_caller_info->[3]\n$caller";
+		      }
+		    }
+		    $caller="CallerInfo:\n$caller";
+		    $err_detail="$_pkg_name\:\:batch_insert\(\) throw $_str_exec_err\nHelpNote  : $_str_dbh_do_err\n$sys_err$param$caller\n";
+    		return wantarray?(0,5,$err_detail,$_pkg_name):0;
+			}
+#===end===
   }
 
-  return 1;  
+#==3.0.7==
+#  return 1;  
+  return wantarray?(1,0,undef,$_pkg_name):1;
+#===end===
 }
 
 #==3.0.4==
