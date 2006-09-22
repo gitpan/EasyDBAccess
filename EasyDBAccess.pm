@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.7';
+our $VERSION = '3.0.8';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.7';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.0.8(2006-09-22): remove DESTROY function, when set InactiveDestroy true, you should not explicitly call to the disconnect method
 #===3.0.7(2006-09-13): modified batch_insert
 #===3.0.6(2006-07-21): change Makefile.PL
 #===3.0.5(2006-07-20): change META.yml
@@ -843,12 +844,15 @@ sub append_file{
   $fh->close();
 }
 
-DESTROY{
-  if(defined($_[0]->{dbh})){
-    $_[0]->{dbh}->disconnect();
-    undef $_[0]->{dbh};
-  }
-}
+#==3.0.8==
+#when set InactiveDestroy true, you should not explicitly call to the disconnect method
+#DESTROY{
+#  if(defined($_[0]->{dbh})){
+#    $_[0]->{dbh}->disconnect();
+#    undef $_[0]->{dbh};
+#  }
+#}
+#===end===
 
 sub execute{
   my $self=shift;
