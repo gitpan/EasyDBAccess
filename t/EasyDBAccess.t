@@ -11,12 +11,12 @@ sub NO_DIE {&EasyTest::NO_DIE};
 sub ANY {&EasyTest::ANY};
 #==============================
 
-plan(229);
+plan(233);
 
 my $realtest = 0;
 
 if (!$realtest){
-for(1..229){ok(1, 1);}
+for(1..233){ok(1, 1);}
 }
 else{
 
@@ -426,10 +426,18 @@ ok(1, \&EasyDBAccess::update, [$dba_2, 'UPDATE PERSON SET %ITEM WHERE NAME=?',['
 ok([1, 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::update,
   [$dba_2, 'UPDATE PERSON SET %ITEM WHERE NAME=?', ['age'], {name=>'jim',age=>24, other_key=>'bye'}, ['jim']], 1);
 
-#test 228-229
+#test 228
 
 ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS PERSON']);
+
+#test 229-233
+ok(['0E0', 0, &ANY, 'EasyDBAccess'], \&EasyDBAccess::execute, [$dba_2, 'CREATE TABLE PERSON(ID INT NOT NULL,NAME VARCHAR(255) NOT NULL,TEMP VARCHAR(255) NOT NULL DEFAULT \'def\')'], 1);
+ok(1, \&EasyDBAccess::batch_insert, [$dba_2, 'insert into PERSON values %V','(?,?,?)',[[11,'bob', \&EasyDBAccess::DEFAULT],[12,'bill','value2']],10]);
+ok(1, \&EasyDBAccess::insert_one_row, [$dba_2, 'INSERT INTO PERSON VALUES(?,?,?)',['id', '?', 'DEFAULT'], {id => 19, DEFAULT=>\&EasyDBAccess::DEFAULT}, ['kate']]);
+ok('0E0', \&EasyDBAccess::execute, [$dba_2, 'DROP TABLE IF EXISTS PERSON']);
+
 ok(1, \&EasyDBAccess::close, [$dba_2]);
+
 
 }
 1;

@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.8';
+our $VERSION = '3.0.9';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.8';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.0.9(2006-11-24): add DEFAULT for column default value
 #===3.0.8(2006-09-22): remove DESTROY function, when set InactiveDestroy true, you should not explicitly call to the disconnect method
 #===3.0.7(2006-09-13): modified batch_insert
 #===3.0.6(2006-07-21): change Makefile.PL
@@ -641,8 +642,24 @@ sub batch_insert{
   if(!defined($max_count)){$max_count=1;}
   
   for(my $i=0;$i<$item_count;$i++ ){
-    $values_str.=$values_tmpl.',';
-    push @$bind_param,@{$values->[$i]};
+#==3.0.9==
+  	my $tmp_tmpl = $values_tmpl;
+  	my $posi = -1;
+  	for(my $j=0; $j<@{$values->[$i]}; ++$j){
+  			$posi = index($tmp_tmpl, '?', $posi + 1);
+  			if (DEFAULT($values->[$i]->[$j])){
+  					substr($tmp_tmpl, $posi, 1, 'DEFAULT');
+  			}
+  	}
+    $values_str.=$tmp_tmpl.',';
+    my $values_i = [];
+  	for(my $j=0; $j<@{$values->[$i]}; ++$j){
+  			if (!DEFAULT($values->[$i]->[$j])){
+  					push @$values_i, $values->[$i]->[$j];
+  			}
+  	}
+    push @$bind_param,@$values_i;
+#===end===
     $c++;
     if($c>=$max_count){
       my $s=$sql_str;
@@ -924,6 +941,24 @@ sub execute{
     }  
     return wantarray?(undef,$err_code,$err_detail,$_pkg_name):undef;
   }
+#==3.0.9==
+  	my $tmp_tmpl = $sql_str;
+  	my $posi = -1;
+  	for(my $j=0; $j<@$bind_param; ++$j){
+  			$posi = index($tmp_tmpl, '?', $posi + 1);
+  			if (DEFAULT($bind_param->[$j])){
+  					substr($tmp_tmpl, $posi, 1, 'DEFAULT');
+  			}
+  	}
+    $sql_str=$tmp_tmpl;
+    my $values_i = [];
+  	for(my $j=0; $j<@$bind_param; ++$j){
+  			if (!DEFAULT($bind_param->[$j])){
+  					push @$values_i, $bind_param->[$j];
+  			}
+  	}
+    $bind_param = $values_i;
+#===end===
   
   my $unicode=$self->{unicode};
   my $dst_encoding=$self->{encoding} eq $_name_utf8?undef:$self->{encoding};
@@ -1687,6 +1722,19 @@ sub select_array{
   if($unicode){_decode($succ,$dst_encoding);};
   return wantarray?($succ,0,undef,$_pkg_name):$succ;
 }
+
+#==3.0.9==
+sub DEFAULT{
+  my $code=1;
+  if(scalar(@_)==0){
+    return bless [$code,'DEFAULT'],'EasyDBAccess::CONSTANT';
+  }elsif(scalar(@_)==1){
+    return ref $_[0] eq 'EasyDBAccess::CONSTANT' && $_[0]->[0]==$code?1:'';
+  }else{
+    die 'EasyDBAccess::DEFAULT: param number should be 0 or 1';
+  }
+}
+#===end===
 
 1;
 
