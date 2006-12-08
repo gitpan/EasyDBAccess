@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.0.9';
+our $VERSION = '3.1.0';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.0.9';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.1.0(2006-12-07): fix bug in id() when concurrency
 #===3.0.9(2006-11-24): add DEFAULT for column default value
 #===3.0.8(2006-09-22): remove DESTROY function, when set InactiveDestroy true, you should not explicitly call to the disconnect method
 #===3.0.7(2006-09-13): modified batch_insert
@@ -401,8 +402,12 @@ sub id{
     }
     my $rc=$self->{dbh}->do('UPDATE RES SET ID=LAST_INSERT_ID(ID+1) WHERE ATTRIB=?;',undef,defined($_[0])?$_[0]:'ANON');
     if($rc==0){
-      $self->{dbh}->do('INSERT INTO RES(ATTRIB,ID) VALUES(?,1);',undef,defined($_[0])?$_[0]:'ANON');
-      return 1;
+#==3.1.0==
+#      $self->{dbh}->do('INSERT INTO RES(ATTRIB,ID) VALUES(?,1);',undef,defined($_[0])?$_[0]:'ANON');
+#      return 1;
+      $self->{dbh}->do('INSERT INTO RES(ATTRIB,ID) VALUES(?,0);',undef,defined($_[0])?$_[0]:'ANON');
+      $self->{dbh}->do('UPDATE RES SET ID=LAST_INSERT_ID(ID+1) WHERE ATTRIB=?;',undef,defined($_[0])?$_[0]:'ANON');
+#==end==
     }
     my $id=$self->{dbh}->selectrow_arrayref('SELECT LAST_INSERT_ID();')->[0];
     return $id;
