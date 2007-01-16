@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.1.0';
+our $VERSION = '3.1.1';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.1.0';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.1.1(2006-12-27): change document for return value detail
 #===3.1.0(2006-12-07): fix bug in id() when concurrency
 #===3.0.9(2006-11-24): add DEFAULT for column default value
 #===3.0.8(2006-09-22): remove DESTROY function, when set InactiveDestroy true, you should not explicitly call to the disconnect method
@@ -2180,39 +2181,39 @@ B<e.g>
 
 =head2 execute - execute command
 
-  $rc/($rc,$err_code)=$dba->execute($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->execute($sql_str,$bind_param,$inline_param);
 
   return result of $dbh->do if succ, in most case ,this will be "affected rows"
   if execute error, $rc return undef
 
 =head2 select - return result as array_ref of hash_ref
 
-  $rc/($rc,$err_code)=$dba->select($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->select($sql_str,$bind_param,$inline_param);
   
   return result as array_ref of hash_ref ([{id=>1,name=>'hello'},...]) 
 
 =head2 select_array - return result as array_ref of array_ref
 
-  $rc/($rc,$err_code)=$dba->select_select_array($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->select_select_array($sql_str,$bind_param,$inline_param);
 
   return result as array_ref of array_ref ([[1,'hello'],...]) 
 
 =head2 select_row - return first row of result set as hash
 
-  $rc/($rc,$err_code)=$dba->select_row($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->select_row($sql_str,$bind_param,$inline_param);
     
   return first row of result set as hash ({id=>1,name=>'hello'})
   if no row in result set, then $rc=undef, $err_code=1 but won't cause a die
 
 =head2 select_col - return first column of result set as array_ref
 
-  $rc/($rc,$err_code)=$dba->select_row($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->select_row($sql_str,$bind_param,$inline_param);
   
   return first column of result set as array_ref( [1,2,3,...] )
 
 =head2 select_one - return first row first column of result set scalar
 
-  $rc/($rc,$err_code)=$dba->select_one($sql_str,$bind_param,$inline_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->select_one($sql_str,$bind_param,$inline_param);
 
   return first row first column of result set scalar( 1 )
   if no row in result set, then $rc=undef, $err_code=1 but won't cause a die
@@ -2223,9 +2224,11 @@ B<e.g>
 
   insert many record into table at once
   
-  $dba->$dba->batch_insert($sql_str,$values_tmpl,$values,$max_count);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)=$dba->batch_insert($sql_str,$values_tmpl,$values,$max_count);
     
   $max_count: max record insert per time, the default value for $max_count is 1
+  return result of $dbh->do if succ, in most case ,this will be "affected rows"
+  if execute error, $rc return undef
 
 B<e.g>
 
@@ -2275,7 +2278,7 @@ B<e.g>
 
   execute command from binding data, always for insert
 
-  $rc/($rc,$err_code)=EasyDBAccess::insert_one_row($sql, $filter, $rh_data, $ra);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)==EasyDBAccess::insert_one_row($sql, $filter, $rh_data, $ra);
   
 B<e.g>
 
@@ -2289,7 +2292,7 @@ B<e.g>
 
   execute command from binding data, always for update
 
-  $rc/($rc,$err_code)=EasyDBAccess::update($sql, $filter, $rh_data, $ra_param);
+  $rc/($rc,$err_code,$err_detail,$_pkg_name)==EasyDBAccess::update($sql, $filter, $rh_data, $ra_param);
   
 B<e.g>
 
