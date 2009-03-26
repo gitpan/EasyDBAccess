@@ -2,7 +2,7 @@ package EasyDBAccess;
 use strict;
 use warnings(FATAL=>'all');
 
-our $VERSION = '3.1.1';
+our $VERSION = '3.1.2';
 
 #===================================
 #===Module  : 43effa740d56a6fd
@@ -31,6 +31,7 @@ our $VERSION = '3.1.1';
 #===MSN     : huang.shuai@adways.net ===
 #=======================================
 
+#===3.1.2(2009-03-26): fix bug in batch_insert
 #===3.1.1(2006-12-27): change document for return value detail
 #===3.1.0(2006-12-07): fix bug in id() when concurrency
 #===3.0.9(2006-11-24): add DEFAULT for column default value
@@ -644,9 +645,12 @@ sub batch_insert{
 
   my $values_str='';my $bind_param=[];my $c=0;  
   my $item_count=scalar(@$values);
-  if ($item_count==0){return 1;}
+#==3.1.2==
+#if ($item_count==0){return 1;}
+if ($item_count==0){return wantarray?(1,0,undef,$_pkg_name):1;}
+#==end==
+
   if(!defined($max_count)){$max_count=1;}
-  
   for(my $i=0;$i<$item_count;$i++ ){
 #==3.0.9==
   	my $tmp_tmpl = $values_tmpl;
